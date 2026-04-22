@@ -1,0 +1,1225 @@
+[index.html](https://github.com/user-attachments/files/26963354/index.html)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vedra — Leave Planner 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@400;600&display=swap');
+
+  :root {
+    --sheridan: #5d6776;
+    --barley: #e9e5df;
+    --alabaster: #d0c3be;
+    --lava: #777073;
+    --sage: #969c84;
+    --black: #1a1a1a;
+    --white: #ffffff;
+    --ok: #969c84;
+    --warn: #c4a35a;
+    --danger: #b05a5a;
+    --booked: #5d6776;
+    --suggested: #969c84;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: #f4f1ec;
+    color: var(--black);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--black);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    display: flex;
+    align-items: center;
+  }
+  .header-title {
+    font-size: 11px;
+    color: var(--alabaster);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .header-date {
+    font-size: 10px;
+    color: var(--lava);
+    letter-spacing: 0.1em;
+  }
+
+  /* CONTROLS */
+  .controls {
+    background: var(--white);
+    border-bottom: 1px solid var(--alabaster);
+    padding: 14px 32px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .controls label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--lava);
+    margin-right: 6px;
+  }
+  .controls select, .controls input {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    border: 1px solid var(--alabaster);
+    background: var(--barley);
+    color: var(--black);
+    padding: 5px 10px;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  .legend {
+    margin-left: auto;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--lava);
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    background: var(--barley);
+    border-bottom: 2px solid var(--alabaster);
+    padding: 0 32px;
+  }
+  .tab {
+    padding: 12px 20px;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--lava);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    color: var(--black);
+    border-bottom-color: var(--sheridan);
+    background: var(--white);
+  }
+  .tab:hover:not(.active) { color: var(--sheridan); }
+
+  /* MAIN CONTENT */
+  .content { padding: 24px 32px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ---- CALENDAR VIEW ---- */
+  .calendar-wrapper { overflow-x: auto; }
+  .calendar-table {
+    border-collapse: collapse;
+    min-width: 1200px;
+    width: 100%;
+  }
+  .cal-header-row th {
+    position: sticky;
+    top: 0;
+    background: var(--sheridan);
+    color: var(--white);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 8px 4px;
+    text-align: center;
+    font-weight: 500;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    min-width: 28px;
+  }
+  .cal-header-row th.name-col {
+    text-align: left;
+    padding-left: 12px;
+    min-width: 180px;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+  }
+  .cal-header-row th.role-col {
+    text-align: left;
+    padding-left: 8px;
+    min-width: 140px;
+  }
+  .cal-header-row th.bal-col {
+    min-width: 50px;
+  }
+
+  .cal-month-row th {
+    background: var(--lava);
+    color: var(--barley);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 5px 4px;
+    text-align: center;
+    font-weight: 400;
+    border-right: 1px solid rgba(255,255,255,0.15);
+  }
+  .cal-month-row th.name-col {
+    text-align: left;
+    padding-left: 12px;
+    position: sticky;
+    left: 0;
+    background: var(--lava);
+    z-index: 10;
+  }
+
+  .cal-body tr {
+    border-bottom: 1px solid var(--alabaster);
+    transition: background 0.15s;
+  }
+  .cal-body tr:hover { background: rgba(93,103,118,0.04); }
+
+  .cal-body td {
+    padding: 0;
+    height: 32px;
+    vertical-align: middle;
+    border-right: 1px solid rgba(208,195,190,0.4);
+    position: relative;
+  }
+  .cal-body td.name-col {
+    padding: 0 12px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    position: sticky;
+    left: 0;
+    background: var(--white);
+    z-index: 5;
+    min-width: 180px;
+  }
+  .cal-body tr:nth-child(even) td.name-col { background: var(--barley); }
+  .cal-body tr:nth-child(odd) td.name-col { background: var(--white); }
+
+  .cal-body td.role-col {
+    padding: 0 8px;
+    font-size: 9px;
+    color: var(--lava);
+    white-space: nowrap;
+  }
+  .cal-body td.bal-col {
+    padding: 0 4px;
+    font-size: 9px;
+    text-align: center;
+    font-weight: 500;
+  }
+  .cal-body td.day-cell {
+    width: 28px;
+    min-width: 28px;
+    cursor: default;
+  }
+  .cal-body tr:nth-child(even) { background: var(--barley); }
+
+  .day-fill {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+  }
+  .day-fill.booked {
+    background: var(--sheridan);
+    color: var(--white);
+  }
+  .day-fill.suggested {
+    background: var(--sage);
+    color: var(--white);
+    opacity: 0.85;
+  }
+  .day-fill.weekend {
+    background: rgba(119,112,115,0.08);
+  }
+  .day-fill.past {
+    background: rgba(119,112,115,0.05);
+  }
+  .day-fill.conflict-role {
+    background: var(--warn) !important;
+    opacity: 1;
+  }
+  .day-fill.conflict-link {
+    background: var(--danger) !important;
+    opacity: 1;
+  }
+
+  /* Role group headers */
+  .role-group-header td {
+    background: var(--barley) !important;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--sheridan);
+    font-weight: 500;
+    padding: 8px 12px;
+    border-top: 2px solid var(--alabaster);
+  }
+
+  /* ---- SUGGESTIONS VIEW ---- */
+  .suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .suggestion-card {
+    background: var(--white);
+    border: 1px solid var(--alabaster);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .card-header {
+    background: var(--sheridan);
+    color: var(--white);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-name {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .card-role {
+    font-size: 9px;
+    opacity: 0.75;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .card-balance {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--barley);
+  }
+  .card-bal-label {
+    font-size: 8px;
+    opacity: 0.6;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: right;
+  }
+  .card-body { padding: 14px 16px; }
+  .card-windows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .window-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--barley);
+    border-radius: 3px;
+    border-left: 3px solid var(--sage);
+    font-size: 10px;
+  }
+  .window-item.has-conflict {
+    border-left-color: var(--warn);
+    background: rgba(196,163,90,0.08);
+  }
+  .window-dates {
+    flex: 1;
+    font-weight: 500;
+    color: var(--black);
+  }
+  .window-days {
+    font-size: 9px;
+    color: var(--lava);
+    white-space: nowrap;
+  }
+  .window-flag {
+    font-size: 8px;
+    color: var(--warn);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+  .card-linked {
+    margin-top: 10px;
+    font-size: 9px;
+    color: var(--lava);
+    padding: 6px 10px;
+    background: rgba(119,112,115,0.06);
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+  .card-linked strong { color: var(--sheridan); }
+
+  /* ---- SUMMARY VIEW ---- */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .summary-table th {
+    background: var(--sheridan);
+    color: var(--white);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .summary-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--alabaster);
+    vertical-align: middle;
+  }
+  .summary-table tr:nth-child(even) { background: var(--barley); }
+  .summary-table tr:hover { background: rgba(93,103,118,0.06); }
+
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--alabaster);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--sage);
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+  .progress-fill.urgent { background: var(--danger); }
+  .progress-fill.moderate { background: var(--warn); }
+
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .status-badge.ok { background: rgba(150,156,132,0.2); color: var(--sage); }
+  .status-badge.moderate { background: rgba(196,163,90,0.15); color: #8a6f28; }
+  .status-badge.urgent { background: rgba(176,90,90,0.15); color: var(--danger); }
+
+  /* Conflict panel */
+  .conflict-panel {
+    background: rgba(176,90,90,0.06);
+    border: 1px solid rgba(176,90,90,0.2);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .conflict-panel h3 {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--danger);
+    margin-bottom: 10px;
+  }
+  .conflict-item {
+    font-size: 10px;
+    padding: 4px 0;
+    color: var(--black);
+    border-bottom: 1px solid rgba(176,90,90,0.1);
+  }
+  .conflict-item:last-child { border-bottom: none; }
+
+  .section-title {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--lava);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--alabaster);
+  }
+
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 9px;
+    color: var(--lava);
+    letter-spacing: 0.12em;
+    border-top: 1px solid var(--alabaster);
+    margin-top: 32px;
+  }
+
+  /* Weekend column shading */
+  .day-cell.is-weekend { background: rgba(119,112,115,0.04); }
+
+  @media print {
+    .controls, .tabs, .header { print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo"><img src="data:image/png;base64,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" alt="Vedra" style="height:28px;display:block;"></div>
+  <div class="header-title">Leave Planner 2026</div>
+  <div class="header-date">Generated 22 April 2026</div>
+</div>
+
+<div class="controls">
+  <div>
+    <label>View by</label>
+    <select id="groupBy" onchange="renderCalendar()">
+      <option value="role">Role Group</option>
+      <option value="alpha">Alphabetical</option>
+      <option value="balance">Balance (High→Low)</option>
+    </select>
+  </div>
+  <div>
+    <label>Filter role</label>
+    <select id="filterRole" onchange="renderCalendar()">
+      <option value="">All Roles</option>
+    </select>
+  </div>
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:var(--sheridan)"></div>
+      Booked
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:var(--sage)"></div>
+      Suggested
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:var(--warn)"></div>
+      Role conflict
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:var(--danger)"></div>
+      Link conflict
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:rgba(119,112,115,0.15)"></div>
+      Weekend
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('calendar')">Calendar</div>
+  <div class="tab" onclick="showTab('suggestions')">Leave Suggestions</div>
+  <div class="tab" onclick="showTab('summary')">Balance Summary</div>
+</div>
+
+<div class="content">
+  <div id="view-calendar" class="view active"></div>
+  <div id="view-suggestions" class="view"></div>
+  <div id="view-summary" class="view"></div>
+</div>
+
+<div class="footer">Vedra Developer FZ LLC &nbsp;|&nbsp; vedra.dev &nbsp;|&nbsp; © 2026 VEDRA. All rights reserved. &nbsp;|&nbsp; Internal Use Only</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const EMPLOYEES = [
+  {name:"Mohamed Aboalnaga", role:"Project Manager", toTake:23, linked:[]},
+  {name:"Asli Yazici", role:"Project Manager", toTake:20.1, linked:[]},
+  {name:"Samuel Klas Klippel", role:"Project Manager", toTake:17.3, linked:[]},
+  {name:"Yathavan Sentilkumar", role:"Project Manager", toTake:14.9, linked:["Walid Tabet"]},
+  {name:"Sandeep Venugopal", role:"Project Manager", toTake:13, linked:[]},
+  {name:"Rohan Kang", role:"Project Manager", toTake:7.8, linked:[]},
+  {name:"Aysen Gezersen", role:"Senior Project Manager", toTake:16, linked:[]},
+  {name:"Walid Tabet", role:"Senior Project Manager", toTake:13, linked:["Yathavan Sentilkumar"]},
+  {name:"Bilal Ahamed", role:"Senior Quantity Surveyor", toTake:19, linked:[]},
+  {name:"Hussain Moiz", role:"Senior Quantity Surveyor", toTake:14, linked:[]},
+  {name:"Asker Misba", role:"Quantity Surveyor", toTake:16.7, linked:[]},
+  {name:"Rose Ann Calma", role:"Junior Quantity Surveyor", toTake:15.4, linked:[]},
+  {name:"Kristine Tesorio", role:"Junior Quantity Surveyor", toTake:7, linked:[]},
+  {name:"Khalil Ayyoub", role:"Project Director", toTake:19, linked:["Sofia Amar"]},
+  {name:"Gary Mcilwraith", role:"Commercial Director", toTake:17.7, linked:["Khalil Ayyoub"]},
+  {name:"Usama Saleem", role:"Planning Manager", toTake:19, linked:[]},
+  {name:"Altaf Shaik", role:"HSE Manager", toTake:21, linked:[]},
+  {name:"Kasandra Amor Barit Agustin", role:"Document Controller", toTake:18.7, linked:[]},
+  {name:"Sofia Amar", role:"People & Ops Manager", toTake:16.9, linked:["Khalil Ayyoub","Anthionet Ayukayang Tanyi"]},
+  {name:"Anthionet Ayukayang Tanyi", role:"Barista", toTake:13.6, linked:["Sofia Amar"]},
+];
+
+const BOOKED = [
+  {name:"Altaf Shaik", from:"2026-03-13", to:"2026-03-13"},
+  {name:"Altaf Shaik", from:"2026-03-16", to:"2026-03-27"},
+  {name:"Aysen Gezersen", from:"2026-03-02", to:"2026-03-03"},
+  {name:"Aysen Gezersen", from:"2026-05-18", to:"2026-05-25"},
+  {name:"Khalil Ayyoub", from:"2026-03-16", to:"2026-03-18"},
+  {name:"Khalil Ayyoub", from:"2026-04-24", to:"2026-04-27"},
+  {name:"Mohamed Aboalnaga", from:"2026-04-07", to:"2026-04-07"},
+  {name:"Rohan Kang", from:"2026-05-25", to:"2026-05-25"},
+  {name:"Rohan Kang", from:"2026-06-22", to:"2026-07-03"},
+  {name:"Sandeep Venugopal", from:"2026-05-04", to:"2026-05-08"},
+  {name:"Usama Saleem", from:"2026-03-23", to:"2026-03-27"},
+  {name:"Walid Tabet", from:"2026-04-06", to:"2026-04-14"},
+  {name:"Walid Tabet", from:"2026-05-25", to:"2026-05-25"},
+  {name:"Asker Misba", from:"2026-05-16", to:"2026-05-31"},
+  {name:"Bilal Ahamed", from:"2026-01-07", to:"2026-01-08"},
+  {name:"Bilal Ahamed", from:"2026-01-16", to:"2026-01-16"},
+  {name:"Bilal Ahamed", from:"2026-01-23", to:"2026-01-23"},
+  {name:"Bilal Ahamed", from:"2026-02-13", to:"2026-02-13"},
+  {name:"Gary Mcilwraith", from:"2026-04-02", to:"2026-04-02"},
+  {name:"Hussain Moiz", from:"2026-03-23", to:"2026-04-03"},
+  {name:"Kristine Tesorio", from:"2026-01-29", to:"2026-01-29"},
+  {name:"Kristine Tesorio", from:"2026-03-10", to:"2026-03-10"},
+  {name:"Kristine Tesorio", from:"2026-03-23", to:"2026-03-23"},
+  {name:"Kristine Tesorio", from:"2026-03-30", to:"2026-03-31"},
+  {name:"Kristine Tesorio", from:"2026-04-22", to:"2026-04-22"},
+  {name:"Kristine Tesorio", from:"2026-05-25", to:"2026-05-25"},
+  {name:"Kristine Tesorio", from:"2026-06-01", to:"2026-06-12"},
+  {name:"Rose Ann Calma", from:"2026-01-19", to:"2026-01-23"},
+  {name:"Rose Ann Calma", from:"2026-03-11", to:"2026-03-11"},
+];
+
+// ============================================================
+// HELPERS
+// ============================================================
+function parseDate(s) {
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function fmtDate(d) {
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+function addDays(d, n) {
+  const r = new Date(d); r.setDate(r.getDate()+n); return r;
+}
+function isWeekend(d) { return d.getDay()===0 || d.getDay()===6; }
+function workdaysBetween(a, b) {
+  let c=0, d=new Date(a);
+  while(d<=b){ if(!isWeekend(d)) c++; d=addDays(d,1); }
+  return c;
+}
+function overlap(s1,e1,s2,e2) { return s1<=e2 && e1>=s2; }
+
+function dateRange(from, to) {
+  const days=[];
+  let d = parseDate(from);
+  const end = parseDate(to);
+  while(d<=end){ days.push(fmtDate(d)); d=addDays(d,1); }
+  return days;
+}
+
+// Build booked day sets per person
+const bookedDays = {}; // name -> Set<string>
+BOOKED.forEach(b=>{
+  if(!bookedDays[b.name]) bookedDays[b.name]=new Set();
+  dateRange(b.from, b.to).forEach(d=>bookedDays[b.name].add(d));
+});
+
+// Build role-day map for conflict detection
+function buildRoleDayMap(suggestions) {
+  // returns {role -> {date -> count}}
+  const map = {};
+  const allBookings = [...BOOKED];
+  // add suggestions
+  suggestions.forEach(s=>{
+    if(s.windows) s.windows.forEach(w=>{
+      allBookings.push({name:s.name, from:w.from, to:w.to});
+    });
+  });
+  EMPLOYEES.forEach(e=>{
+    allBookings.filter(b=>b.name===e.name).forEach(b=>{
+      dateRange(b.from,b.to).forEach(d=>{
+        if(!map[e.role]) map[e.role]={};
+        map[e.role][d]=(map[e.role][d]||0)+1;
+      });
+    });
+  });
+  return map;
+}
+
+// ============================================================
+// SUGGESTION ALGORITHM
+// ============================================================
+// Generate leave windows for each employee
+// Strategy: spread remaining balance into 1-3 blocks across remaining weeks
+// Avoid: >3 same-role on same day, linked people on same day
+
+const TODAY = new Date(2026,3,22); // Apr 22
+const YEAR_END = new Date(2026,11,31);
+
+// Hard constraints:
+// Sofia Amar      → 2 weeks starting Mon 3 Aug (Aug 3–14, 10 working days) — fixed
+// Anthionet Tanyi → any leave must start after 1 Oct
+// These are pre-scheduled so linked-pair logic avoids them automatically.
+
+const FIXED_BLOCKS = {
+  "Sofia Amar": [{from:"2026-08-03", to:"2026-08-14", days:10, fixed:true}, {from:"2026-12-21", to:"2026-12-25", days:5, fixed:true}],
+  "Anthionet Ayukayang Tanyi": []
+};
+
+const SEARCH_WINDOW = {
+  "Anthionet Ayukayang Tanyi": { after: new Date(2026,9,1) }
+};
+
+function generateSuggestions() {
+  const rolePressure = {};
+  EMPLOYEES.forEach(e=>{ if(!rolePressure[e.role]) rolePressure[e.role]={}; });
+
+  // Seed with already-booked leave
+  BOOKED.forEach(b=>{
+    const emp = EMPLOYEES.find(e=>e.name===b.name);
+    if(!emp) return;
+    dateRange(b.from,b.to).forEach(d=>{
+      rolePressure[emp.role][d]=(rolePressure[emp.role][d]||0)+1;
+    });
+  });
+
+  // Pre-seed fixed blocks into pressure map so other employees avoid those weeks
+  Object.entries(FIXED_BLOCKS).forEach(([name, blocks])=>{
+    const emp = EMPLOYEES.find(e=>e.name===name);
+    if(!emp) return;
+    blocks.forEach(b=>{
+      dateRange(b.from,b.to).forEach(d=>{
+        rolePressure[emp.role][d]=(rolePressure[emp.role][d]||0)+1;
+      });
+    });
+  });
+
+  // Check if any linked person is occupied in a candidate window
+  // (booked days OR fixed blocks)
+  function linkedOccupied(emp, winStart, winEnd) {
+    for(const ln of emp.linked) {
+      const lBD = bookedDays[ln]||new Set();
+      let dd = new Date(winStart);
+      while(dd<=winEnd){
+        if(lBD.has(fmtDate(dd))) return true;
+        dd=addDays(dd,1);
+      }
+      for(const fb of (FIXED_BLOCKS[ln]||[])){
+        if(overlap(winStart,winEnd,parseDate(fb.from),parseDate(fb.to))) return true;
+      }
+    }
+    return false;
+  }
+
+  const suggestions = [];
+
+  EMPLOYEES.forEach(emp => {
+    const remaining = emp.toTake;
+    if(remaining < 5){ suggestions.push({...emp, windows:[]}); return; }
+
+    const bookedFuture = (bookedDays[emp.name]?[...bookedDays[emp.name]]:[])
+      .filter(d=>parseDate(d)>TODAY).length;
+    const fixedDays = (FIXED_BLOCKS[emp.name]||[]).reduce((a,b)=>a+b.days,0);
+    const stillNeeded = Math.max(0, remaining - bookedFuture - fixedDays);
+
+    // Start with fixed blocks already in the window list
+    const windows = [...(FIXED_BLOCKS[emp.name]||[])];
+
+    if(stillNeeded < 3){ suggestions.push({...emp, windows, stillNeeded}); return; }
+
+    const blocks = stillNeeded >= 15 ? 3 : stillNeeded >= 8 ? 2 : 1;
+    const blockSize = Math.round(stillNeeded / blocks);
+
+    const searchConstraint = SEARCH_WINDOW[emp.name];
+    let searchFrom = searchConstraint ? new Date(searchConstraint.after) : new Date(TODAY);
+    const searchEnd  = searchConstraint ? new Date(2026,11,15) : new Date(2026,9,31);
+
+    for(let b=0; b<blocks; b++){
+      const scheduled = windows.filter(w=>!w.fixed).reduce((a,w)=>a+w.days,0);
+      const target = Math.round(b===blocks-1 ? stillNeeded - scheduled : blockSize);
+      if(target < 1) break;
+
+      let bestStart=null, bestScore=Infinity;
+      let tryDate = new Date(searchFrom);
+      while(tryDate.getDay()!==1) tryDate=addDays(tryDate,1);
+
+      while(tryDate <= searchEnd){
+        const alreadyUsed = windows.some(w=>
+          overlap(tryDate,addDays(tryDate,target+4),parseDate(w.from),parseDate(w.to))
+        );
+        if(!alreadyUsed){
+          let pressure=0, d2=new Date(tryDate), wdCount=0;
+          while(wdCount<target){
+            if(!isWeekend(d2)){ pressure+=(rolePressure[emp.role][fmtDate(d2)]||0); wdCount++; }
+            d2=addDays(d2,1);
+          }
+          const endDate=addDays(d2,-1);
+
+          // Hard rule: skip if linked person is on leave during this window
+          if(linkedOccupied(emp, tryDate, endDate)){ tryDate=addDays(tryDate,7); continue; }
+
+          // Hard rule: no two leave blocks in the same calendar month
+          const tryMonth = tryDate.getMonth();
+          const sameMonth = windows.some(w=>parseDate(w.from).getMonth()===tryMonth || parseDate(w.to).getMonth()===tryMonth);
+          if(sameMonth){ tryDate=addDays(tryDate,7); continue; }
+
+          const score = pressure * 10;
+          if(score < bestScore){
+            bestScore=score;
+            bestStart={start:new Date(tryDate),end:endDate,pressure,linkConflict:false,days:target};
+          }
+        }
+        tryDate=addDays(tryDate,7);
+      }
+
+      if(bestStart){
+        const entry={from:fmtDate(bestStart.start),to:fmtDate(bestStart.end),days:bestStart.days,pressure:bestStart.pressure,linkConflict:false,fixed:false};
+        windows.push(entry);
+        dateRange(entry.from,entry.to).forEach(d=>{
+          rolePressure[emp.role][d]=(rolePressure[emp.role][d]||0)+1;
+        });
+        searchFrom=addDays(bestStart.end,14);
+      }
+    }
+    suggestions.push({...emp, windows, stillNeeded});
+  });
+
+  return suggestions;
+}
+
+
+const SUGGESTIONS = generateSuggestions();
+
+// userWindows is the mutable copy — edited by user via date pickers
+// Structure: { employeeName: [ {from, to, days, fixed, linkConflict, pressure} ] }
+const userWindows = {};
+SUGGESTIONS.forEach(s=>{
+  userWindows[s.name] = (s.windows||[]).map(w=>({...w}));
+});
+
+// Rebuild suggestedDays from userWindows (called after every edit)
+const suggestedDays = {};
+function rebuildSuggestedDays() {
+  Object.keys(suggestedDays).forEach(k=>delete suggestedDays[k]);
+  Object.entries(userWindows).forEach(([name, windows])=>{
+    suggestedDays[name] = new Set();
+    windows.forEach(w=>dateRange(w.from,w.to).forEach(d=>suggestedDays[name].add(d)));
+  });
+}
+rebuildSuggestedDays();
+
+// Shift a window: keep same number of working days, new start = newFrom (a date string)
+function shiftWindow(name, winIdx, newFromStr) {
+  const w = userWindows[name][winIdx];
+  const days = w.days;
+  let d = parseDate(newFromStr);
+  // advance to Monday if not already
+  while(d.getDay()!==1) d=addDays(d,1);
+  let wdCount=0, d2=new Date(d);
+  while(wdCount<days){
+    if(!isWeekend(d2)) wdCount++;
+    d2=addDays(d2,1);
+  }
+  const newTo = addDays(d2,-1);
+  userWindows[name][winIdx] = {...w, from:fmtDate(d), to:fmtDate(newTo)};
+  rebuildSuggestedDays();
+  renderCalendar();
+  renderSuggestions();
+}
+
+// Validate: check link conflicts and role conflicts for current userWindows
+function getWindowConflicts(name, winIdx) {
+  const w = userWindows[name][winIdx];
+  const emp = EMPLOYEES.find(e=>e.name===name);
+  if(!emp) return {link:false, role:false};
+  const wStart = parseDate(w.from), wEnd = parseDate(w.to);
+  
+  // link conflict
+  let linkConflict = false;
+  emp.linked.forEach(ln=>{
+    const lBD = bookedDays[ln]||new Set();
+    const lWin = (userWindows[ln]||[]);
+    let dd=new Date(wStart);
+    while(dd<=wEnd){
+      const ds=fmtDate(dd);
+      if(lBD.has(ds)) { linkConflict=true; }
+      dd=addDays(dd,1);
+    }
+    lWin.forEach(lw=>{
+      if(overlap(wStart,wEnd,parseDate(lw.from),parseDate(lw.to))) linkConflict=true;
+    });
+  });
+
+  // role pressure
+  let pressure=0;
+  dateRange(w.from,w.to).forEach(ds=>{
+    let count=0;
+    EMPLOYEES.filter(e=>e.role===emp.role&&e.name!==name).forEach(e=>{
+      const allD=[...(bookedDays[e.name]||new Set()),...(suggestedDays[e.name]||new Set())];
+      if(allD.includes(ds)) count++;
+    });
+    pressure=Math.max(pressure,count);
+  });
+
+  return {link:linkConflict, role:pressure>=3};
+}
+
+// ============================================================
+// CALENDAR MONTHS: May - December 2026
+// ============================================================
+function getMonths() {
+  const months=[];
+  // Show Apr 22 onwards: April week + May - Dec
+  for(let m=3; m<=11; m++) {
+    const days=[];
+    const y=2026;
+    const daysInMonth = new Date(y,m+1,0).getDate();
+    const start = m===3 ? 22 : 1;
+    for(let d=start; d<=daysInMonth; d++) {
+      days.push(new Date(y,m,d));
+    }
+    if(days.length) months.push({month:m, year:y, days});
+  }
+  return months;
+}
+
+const MONTHS = getMonths();
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const ROLES_ORDER = [
+  'Project Director','Senior Project Manager','Project Manager',
+  'Commercial Director','Planning Manager','Senior Quantity Surveyor',
+  'Quantity Surveyor','Junior Quantity Surveyor','HSE Manager',
+  'Document Controller','People & Ops Manager','Barista'
+];
+
+// ============================================================
+// TABS
+// ============================================================
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active', ['calendar','suggestions','summary'][i]===name);
+  });
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  if(name==='calendar') renderCalendar();
+  if(name==='suggestions') renderSuggestions();
+  if(name==='summary') renderSummary();
+}
+
+// ============================================================
+// RENDER CALENDAR
+// ============================================================
+function renderCalendar() {
+  const groupBy = document.getElementById('groupBy').value;
+  const filterRole = document.getElementById('filterRole').value;
+
+  let emps = [...EMPLOYEES];
+  if(filterRole) emps = emps.filter(e=>e.role===filterRole);
+
+  if(groupBy==='role') {
+    emps.sort((a,b)=>ROLES_ORDER.indexOf(a.role)-ROLES_ORDER.indexOf(b.role)||a.name.localeCompare(b.name));
+  } else if(groupBy==='alpha') {
+    emps.sort((a,b)=>a.name.localeCompare(b.name));
+  } else {
+    emps.sort((a,b)=>b.toTake-a.toTake);
+  }
+
+  // Build conflict maps
+  const roleDayMap={};
+  const linkDayMap={};
+  EMPLOYEES.forEach(e=>{
+    const allDays=[...(bookedDays[e.name]||new Set()), ...(suggestedDays[e.name]||new Set())];
+    allDays.forEach(d=>{
+      if(!roleDayMap[e.role]) roleDayMap[e.role]={};
+      roleDayMap[e.role][d]=(roleDayMap[e.role][d]||0)+1;
+    });
+    e.linked.forEach(ln=>{
+      allDays.forEach(d=>{
+        const key=`${ln}`;
+        if(!linkDayMap[key]) linkDayMap[key]=new Set();
+        linkDayMap[key].add(d);
+      });
+    });
+  });
+
+  let html = `<div class="calendar-wrapper"><table class="calendar-table">`;
+  
+  // Month header
+  html += `<thead><tr class="cal-month-row"><th class="name-col" colspan="1">Employee</th><th class="role-col">Role</th><th class="bal-col">Days<br>Left</th>`;
+  MONTHS.forEach(m=>{
+    html+=`<th colspan="${m.days.length}" style="text-align:center">${MONTH_NAMES[m.month]}</th>`;
+  });
+  html+=`</tr>`;
+
+  // Day header
+  html += `<tr class="cal-header-row"><th class="name-col"></th><th class="role-col"></th><th class="bal-col"></th>`;
+  MONTHS.forEach(m=>{
+    m.days.forEach(d=>{
+      const weekend=isWeekend(d);
+      html+=`<th style="${weekend?'opacity:0.4':''}">${d.getDate()}</th>`;
+    });
+  });
+  html+=`</tr></thead><tbody class="cal-body">`;
+
+  let lastRole='';
+  emps.forEach(emp=>{
+    if(groupBy==='role' && emp.role!==lastRole) {
+      const totalCols=3+MONTHS.reduce((a,m)=>a+m.days.length,0);
+      html+=`<tr class="role-group-header"><td colspan="${totalCols}">${emp.role}</td></tr>`;
+      lastRole=emp.role;
+    }
+
+    const bDays = bookedDays[emp.name]||new Set();
+    const sDays = suggestedDays[emp.name]||new Set();
+    const balLeft = Math.round(emp.toTake*10)/10;
+
+    // colour balance
+    const balColor = balLeft>=15?'var(--danger)':balLeft>=10?'var(--warn)':'var(--black)';
+
+    html+=`<tr>
+      <td class="name-col">${emp.name}</td>
+      <td class="role-col">${emp.role}</td>
+      <td class="bal-col" style="color:${balColor};font-weight:${balLeft>=15?'600':'400'}">${balLeft}</td>`;
+
+    MONTHS.forEach(m=>{
+      m.days.forEach(d=>{
+        const ds=fmtDate(d);
+        const weekend=isWeekend(d);
+        const past=d<TODAY;
+        const isBooked=bDays.has(ds);
+        const isSuggested=sDays.has(ds);
+
+        // conflict checks
+        const roleCount=(roleDayMap[emp.role]&&roleDayMap[emp.role][ds])||0;
+        const isRoleConflict=(isBooked||isSuggested) && roleCount>3;
+
+        // link conflict: is any linked person also on leave same day?
+        let isLinkConflict=false;
+        if((isBooked||isSuggested) && emp.linked.length>0){
+          emp.linked.forEach(ln=>{
+            const lBD=bookedDays[ln]||new Set();
+            const lSD=suggestedDays[ln]||new Set();
+            if(lBD.has(ds)||lSD.has(ds)) isLinkConflict=true;
+          });
+        }
+
+        let cls='day-fill';
+        let title='';
+        if(isLinkConflict) { cls+=' conflict-link'; title='⚠ Linked person also on leave'; }
+        else if(isRoleConflict) { cls+=' conflict-role'; title='⚠ 3+ same role on leave'; }
+        else if(isBooked) { cls+=' booked'; title='Booked leave'; }
+        else if(isSuggested) { cls+=' suggested'; title='Suggested leave'; }
+        else if(weekend) { cls+=' weekend'; }
+        else if(past) { cls+=' past'; }
+
+        html+=`<td class="day-cell${weekend?' is-weekend':''}">`;
+        if(cls.includes('booked')||cls.includes('suggested')||cls.includes('conflict')) {
+          html+=`<div class="${cls}" title="${title}"></div>`;
+        } else {
+          html+=`<div class="${cls}"></div>`;
+        }
+        html+=`</td>`;
+      });
+    });
+    html+=`</tr>`;
+  });
+
+  html+=`</tbody></table></div>`;
+  document.getElementById('view-calendar').innerHTML=html;
+}
+
+// ============================================================
+// RENDER SUGGESTIONS — interactive with date pickers
+// ============================================================
+function renderSuggestions() {
+  // Gather conflicts across all current userWindows
+  const conflicts=[];
+  SUGGESTIONS.forEach(s=>{
+    const wins = userWindows[s.name]||[];
+    s.linked.forEach(ln=>{
+      wins.forEach((w,wi)=>{
+        const c=getWindowConflicts(s.name,wi);
+        if(c.link && !conflicts.find(x=>x.name===s.name&&x.linked===ln)){
+          conflicts.push({name:s.name, linked:ln, week:w.from});
+        }
+      });
+    });
+  });
+
+  let html='';
+  if(conflicts.length){
+    html+=`<div class="conflict-panel"><h3>⚠ Link Conflicts Detected</h3>`;
+    conflicts.forEach(c=>{
+      html+=`<div class="conflict-item">${c.name} and ${c.linked} have overlapping leave around ${formatDisplayDate(c.week)}</div>`;
+    });
+    html+=`</div>`;
+  }
+
+  html+=`<div class="section-title">Suggested Leave Windows — drag start date to reschedule</div>`;
+  html+=`<div class="suggestions-grid">`;
+
+  SUGGESTIONS.forEach(emp=>{
+    const wins = userWindows[emp.name]||[];
+    const empIdx = SUGGESTIONS.indexOf(emp);
+
+    html+=`<div class="suggestion-card">
+      <div class="card-header">
+        <div>
+          <div class="card-name">${emp.name}</div>
+          <div class="card-role">${emp.role}</div>
+        </div>
+        <div>
+          <div class="card-balance">${Math.ceil(emp.toTake)}</div>
+          <div class="card-bal-label">days to take</div>
+        </div>
+      </div>
+      <div class="card-body">`;
+
+    if(wins.length===0 && emp.toTake>=5){
+      html+=`<div style="font-size:10px;color:var(--lava);padding:8px 0">✓ Leave already sufficiently allocated</div>`;
+    } else if(emp.toTake<5){
+      html+=`<div style="font-size:10px;color:var(--lava);padding:8px 0">Balance below 5 days — excluded from planning</div>`;
+    } else {
+      html+=`<div class="card-windows">`;
+      wins.forEach((w,i)=>{
+        const conflict = getWindowConflicts(emp.name, i);
+        const hasConflict = conflict.link||conflict.role;
+        const isFixed = w.fixed;
+        const safeEmpName = emp.name.replace(/'/g,"\'");
+
+        html+=`<div class="window-item${hasConflict?' has-conflict':''}" id="win-${empIdx}-${i}">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-size:9px;letter-spacing:0.12em;color:var(--lava);text-transform:uppercase">Block ${i+1}</span>
+              ${isFixed?'<span style="font-size:8px;background:var(--sheridan);color:white;padding:1px 6px;border-radius:2px;letter-spacing:0.1em">FIXED</span>':''}
+              ${hasConflict?'<span style="font-size:8px;color:var(--danger)">⚠ conflict</span>':''}
+            </div>
+            <div class="window-dates" style="margin-bottom:6px">${formatDisplayDate(w.from)} – ${formatDisplayDate(w.to)}</div>
+            <div class="window-days" style="margin-bottom:${isFixed?'0':'8px'}">${Math.round(w.days)} working days</div>
+            ${!isFixed ? `
+            <div style="display:flex;align-items:center;gap:6px">
+              <label style="font-size:9px;color:var(--lava);letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap">Move to</label>
+              <input type="date"
+                value="${w.from}"
+                min="2026-04-22"
+                max="2026-12-20"
+                style="font-family:inherit;font-size:10px;border:1px solid var(--alabaster);background:white;padding:3px 6px;border-radius:2px;cursor:pointer;color:var(--black)"
+                onchange="shiftWindow('${safeEmpName}',${i},this.value)"
+              >
+            </div>` : ''}
+          </div>
+        </div>`;
+      });
+      html+=`</div>`;
+    }
+
+    if(emp.linked.length>0){
+      html+=`<div class="card-linked">🔗 Cannot overlap with: <strong>${emp.linked.join(', ')}</strong></div>`;
+    }
+    html+=`</div></div>`;
+  });
+
+  html+=`</div>`;
+  document.getElementById('view-suggestions').innerHTML=html;
+}
+
+// ============================================================
+// RENDER SUMMARY
+// ============================================================
+function renderSummary() {
+  const sorted=[...EMPLOYEES].sort((a,b)=>b.toTake-a.toTake);
+  
+  // Weeks remaining = ~35
+  const weeksLeft=35;
+
+  let html=`<div class="section-title">Leave Balance Summary — as at 22 April 2026</div>`;
+  html+=`<table class="summary-table">
+    <thead><tr>
+      <th>Employee</th><th>Role</th><th>To Take</th>
+      <th>Wks to EOY</th><th>Days/Wk needed</th><th style="min-width:120px">Urgency</th><th>Status</th>
+    </tr></thead><tbody>`;
+
+  sorted.forEach(emp=>{
+    const rate=(emp.toTake/weeksLeft).toFixed(2);
+    const pct=Math.min(100,Math.round(emp.toTake/30*100));
+    let urgency='ok', label='On track';
+    if(emp.toTake>=20){urgency='urgent';label='High — plan now';}
+    else if(emp.toTake>=12){urgency='moderate';label='Moderate';}
+
+    html+=`<tr>
+      <td style="font-weight:500">${emp.name}</td>
+      <td style="font-size:9px;color:var(--lava)">${emp.role}</td>
+      <td style="font-weight:600;color:${urgency==='urgent'?'var(--danger)':urgency==='moderate'?'var(--warn)':'var(--black)'}">${Math.round(emp.toTake*10)/10}</td>
+      <td style="text-align:center">${weeksLeft}</td>
+      <td style="text-align:center;font-size:10px">${rate}/wk</td>
+      <td style="min-width:120px">
+        <div class="progress-bar"><div class="progress-fill ${urgency}" style="width:${pct}%"></div></div>
+      </td>
+      <td><span class="status-badge ${urgency}">${label}</span></td>
+    </tr>`;
+  });
+
+  html+=`</tbody></table>`;
+
+  // Linked pairs summary
+  html+=`<div class="section-title" style="margin-top:28px">Linked Pairs — Cannot be on leave simultaneously</div>`;
+  html+=`<table class="summary-table"><thead><tr><th>Person A</th><th>Person B</th><th>A Balance</th><th>B Balance</th><th>Note</th></tr></thead><tbody>`;
+  
+  const pairsShown=new Set();
+  EMPLOYEES.forEach(e=>{
+    e.linked.forEach(ln=>{
+      const key=[e.name,ln].sort().join('|');
+      if(pairsShown.has(key)) return;
+      pairsShown.add(key);
+      const other=EMPLOYEES.find(x=>x.name===ln)||{toTake:'?',name:ln};
+      const bothHigh=e.toTake>=15&&other.toTake>=15;
+      html+=`<tr>
+        <td style="font-weight:500">${e.name}</td>
+        <td style="font-weight:500">${other.name}</td>
+        <td style="color:${e.toTake>=15?'var(--danger)':'var(--black)'};font-weight:600">${Math.round(e.toTake*10)/10}</td>
+        <td style="color:${other.toTake>=15?'var(--danger)':'var(--black)'};font-weight:600">${typeof other.toTake==='number'?Math.round(other.toTake*10)/10:other.toTake}</td>
+        <td style="font-size:9px;color:var(--lava)">${bothHigh?'⚠ Both have high balances — coordinate early':''}</td>
+      </tr>`;
+    });
+  });
+  html+=`</tbody></table>`;
+
+  document.getElementById('view-summary').innerHTML=html;
+}
+
+function formatDisplayDate(s) {
+  const d=parseDate(s);
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  // Populate role filter
+  const roles=[...new Set(EMPLOYEES.map(e=>e.role))].sort();
+  const sel=document.getElementById('filterRole');
+  roles.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o); });
+
+  renderCalendar();
+}
+
+init();
+</script>
+</body>
+</html>
